@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dialog 组件</title>
+</head>
+<style>
+    .container {
+        width: 800px;
+        margin: 30px auto;
+        padding: 30px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+    }
+
+    .dialog {
+        position:fixed;
+        top:0;
+        left:0;
+        right:0;
+        bottom:0;
+        background:rgba(0,0,0,0.3);
+        display:none;
+        opacity: 0;
+        transition:all .3s;
+    }
+    .dialog.show{
+        display:block;
+    }
+    .dialog.appear {
+        opacity: 1;
+    }
+    .header {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .header .close {
+        margin-left: auto;
+        display:flex;
+        justify-content: center;
+        align-items: center;
+        border:none;
+        outline: none;
+        padding: 0px;
+    }
+
+    .main {
+        width:500px;
+        background:white;
+        margin:30px auto;
+        padding:30px;
+        border-radius: 5px;
+        transform:translateY(-200%);
+        transition: all .3s;
+    }
+    .dialog.appear .main{
+        transform:translateY(0);
+    }
+
+    .footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    .footer button {
+        margin-left: 20px;
+        padding: 8px 12px;
+        border: 1px solid #ccc;
+        background: white;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    .footer button:hover {
+        background: blue;
+        color: white;
+    }
+
+    /* 画两根线*/
+    .close::before,
+    .close::after{
+        /* 脱离文档流，这样两个线就不受文档流的限制，自然交叉在一起； */
+        position:absolute;
+        content:'';
+        display:block;
+        width:20px;
+        height:2px;
+        background:black;
+        transform:rotate(45deg);
+    }
+    /* 再旋转after*/
+    .close::after{
+        transform: rotate(-45deg);
+    }
+
+  
+</style>
+
+<body>
+    <div class="container">
+        <h2>Dialog 对话框</h2>
+        <button class="btn-open">打开对话框</button>
+        <div class="dialog">
+            <main class="main">
+                <header class="header">
+                    <h3>提示</h3>
+                    <button class="close"></button>
+                </header>
+                <div>这是一段内容</div>
+                <footer class="footer">
+                    <button class="btn-cancel">取消</button>
+                    <button class="btn-ok">确定</button>
+                </footer>
+            </main>
+        </div>
+    </div>
+</body>
+<script>
+    class Dialog{
+        //options 没有传递默认为空
+        constructor(root,options={}){
+            this.root = root;
+            this.options = options;
+            //判断是否有要执行的对象，没有就返回空函数
+            this.onCancel = options.onCancel || function(){};
+            this.onOk = options.onOk || function(){}
+            this.bind()
+        }
+        bind(){
+            //为页面上每个需要点击的按钮绑定事件
+            let self = this;
+            //任何元素都能querySelector的
+            //为close 叉号绑定事件
+            this.root.querySelector('.close').onclick = function(){
+                //调用关闭方法；
+                self.hide();
+                //执行传递来的oncancel方法
+                self.onCancel();
+            }
+            //为取消按钮绑定事件
+            this.root.querySelector('.btn-cancel').onclick = function(){
+                self.hide();
+                self.onCancel();
+            }
+            //为确定按钮绑定事件
+            this.root.querySelector('.btn-ok').onclick = function(){
+                self.hide();
+                self.onOk();
+            }
+        }
+        hide(){
+            //注意这里我们控制的是两个元素的显示和隐藏，，
+            //1.先改变遮罩层的透明度，然后改变内容的下拉效果
+            this.root.classList.remove('appear');
+            setTimeout(() => {
+                this.root.classList.remove('show');
+            }, 300);
+            
+        }
+        show(){
+            this.root.classList.add('show');
+             setTimeout(() => {
+                this.root.classList.add('appear')
+             }, 0);
+        }
+    }
+
+    let dialog = new Dialog(document.querySelector('.dialog'),{
+        onOk(){
+            console.log('用户点了ok');
+        },
+        onCancel(){
+            console.log('用户点了取消')
+        }
+    });
+
+    
+    let btn = document.querySelector('.btn-open').onclick=function(){
+        dialog.show();
+    }
+</script>
+</html>
